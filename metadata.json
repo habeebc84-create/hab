@@ -1,0 +1,5 @@
+{
+  "name": "EstateMind AI",
+  "description": "A comprehensive Real Estate Management System featuring SQL-based data analysis simulation, property tracking, and agent performance monitoring powered by Gemini.",
+  "requestFramePermissions": []
+}
