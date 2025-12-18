@@ -22,18 +22,25 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, user, onLo
   // Filter nav items based on user role
   const navItems = allNavItems.filter(item => {
     if (user.role === 'admin') return true;
-    // Agents only see Properties and Agents views
-    return [ViewState.PROPERTIES, ViewState.AGENTS].includes(item.id);
+    if (user.role === 'agent') {
+      // Agents only see Properties and Agents views
+      return [ViewState.PROPERTIES, ViewState.AGENTS].includes(item.id);
+    }
+    // Guests only see Properties and Agents views
+    if (user.role === 'guest') {
+       return [ViewState.AGENTS, ViewState.PROPERTIES].includes(item.id);
+    }
+    return false;
   });
 
   return (
-    <div className="w-64 bg-slate-900 text-white h-screen flex flex-col fixed left-0 top-0 shadow-xl z-10">
-      <div className="p-6 border-b border-slate-700">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <span className="text-blue-400">Estate</span>Mind
+    <div className="w-64 glass-sidebar text-white h-screen flex flex-col fixed left-0 top-0 shadow-2xl z-10">
+      <div className="p-6 border-b border-white/10 bg-white/5 backdrop-blur-md">
+        <h1 className="glass-header-3d text-2xl font-bold flex items-center gap-2 drop-shadow-md bg-white/80">
+          <span className="text-blue-600">Estate</span>Mind
         </h1>
-        <p className="text-slate-400 text-xs mt-1 tracking-wider uppercase">
-          {user.role === 'admin' ? 'Enterprise Edition' : 'Agent Portal'}
+        <p className="text-slate-300 text-xs mt-3 tracking-wider uppercase pl-2">
+          {user.role === 'admin' ? 'Enterprise Edition' : user.role === 'agent' ? 'Agent Portal' : 'Public Directory'}
         </p>
       </div>
       
@@ -47,8 +54,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, user, onLo
               onClick={() => onViewChange(item.id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                 isActive 
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' 
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                  ? 'bg-blue-600/80 text-white shadow-lg shadow-blue-900/50 backdrop-blur-sm border border-blue-500/50' 
+                  : 'text-slate-300 hover:bg-white/10 hover:text-white'
               }`}
             >
               <Icon size={20} />
@@ -58,23 +65,23 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, user, onLo
         })}
       </nav>
 
-      <div className="p-4 border-t border-slate-700 space-y-4">
+      <div className="p-4 border-t border-white/10 space-y-4 bg-white/5 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center font-bold text-sm shadow-inner border border-white/10">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center font-bold text-sm shadow-lg border border-white/20">
             {user.avatar}
           </div>
           <div className="overflow-hidden">
-            <p className="text-sm font-medium truncate">{user.name}</p>
-            <p className="text-xs text-slate-400 truncate">{user.email}</p>
+            <p className="text-sm font-medium truncate text-white">{user.name}</p>
+            <p className="text-xs text-slate-300 truncate">{user.email}</p>
           </div>
         </div>
         
         <button 
           onClick={onLogout}
-          className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-slate-800 hover:bg-red-500/10 hover:text-red-400 text-slate-400 text-xs font-medium transition-all"
+          className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-white/10 hover:bg-red-500/20 hover:text-red-300 text-slate-300 text-xs font-medium transition-all border border-white/5"
         >
           <LogOut size={14} />
-          Sign Out
+          {user.role === 'guest' ? 'Exit Search' : 'Sign Out'}
         </button>
       </div>
     </div>

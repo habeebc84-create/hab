@@ -7,24 +7,38 @@ import AgentList from './components/AgentList';
 import ClientList from './components/ClientList';
 import SQLAnalyst from './components/SQLAnalyst';
 import LoginScreen from './components/LoginScreen';
-import { ViewState, User } from './types';
+import BookingPage from './components/BookingPage';
+import { ViewState, User, Property } from './types';
 
 function App() {
   const [currentView, setCurrentView] = useState<ViewState>(ViewState.DASHBOARD);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [selectedBookingProperty, setSelectedBookingProperty] = useState<Property | null>(null);
+
+  const handleBookProperty = (property: Property) => {
+    setSelectedBookingProperty(property);
+    setCurrentView(ViewState.BOOKING);
+  };
 
   const renderContent = () => {
     switch (currentView) {
       case ViewState.DASHBOARD:
         return <Dashboard />;
       case ViewState.PROPERTIES:
-        return <PropertyList />;
+        return <PropertyList onBookProperty={handleBookProperty} />;
       case ViewState.AGENTS:
         return <AgentList user={currentUser!} />;
       case ViewState.CLIENTS:
         return <ClientList />;
       case ViewState.SQL_ANALYST:
         return <SQLAnalyst />;
+      case ViewState.BOOKING:
+        return (
+          <BookingPage 
+            property={selectedBookingProperty} 
+            onBack={() => setCurrentView(ViewState.PROPERTIES)} 
+          />
+        );
       default:
         return <Dashboard />;
     }
@@ -32,9 +46,11 @@ function App() {
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
-    // Redirect agents to Properties view as they don't have access to Dashboard
+    // Redirect agents and guests to specific views
     if (user.role === 'agent') {
       setCurrentView(ViewState.PROPERTIES);
+    } else if (user.role === 'guest') {
+      setCurrentView(ViewState.AGENTS); // Guests likely want to find agents first
     } else {
       setCurrentView(ViewState.DASHBOARD);
     }
@@ -45,7 +61,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+    <div className="min-h-screen text-slate-900 font-sans">
       <Sidebar 
         currentView={currentView} 
         onViewChange={setCurrentView} 

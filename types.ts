@@ -1,38 +1,54 @@
 
 export interface Property {
-  id: number;
+  id: number; // PropertyID
   address: string;
-  price: number;
+  city: string;
+  price: number; // ListedPrice
   bedrooms: number;
   bathrooms: number;
   sqft: number;
-  type: 'Single Family' | 'Condo' | 'Townhouse' | 'Multi-Family';
+  type: 'Single Family' | 'Condo' | 'Townhouse' | 'Multi-Family' | 'Plot' | 'Villa' | 'Loft';
   status: 'For Sale' | 'Pending' | 'Sold';
-  agentId: number;
+  agentId: number; // Listing Agent
   imageUrl: string;
   listedDate: string;
   ownerName: string;
   ownerContact: string;
+  source: string; // New field for aggregation (e.g., Zillow, MagicBricks)
 }
 
 export interface Agent {
-  id: number;
-  name: string;
+  id: number; // AgentID
+  name: string; // AgentName
   email: string;
   phone: string;
-  sales: number;
+  experienceYears: number;
   rating: number;
   imageUrl: string;
-  commissionRate: number; // Percentage (e.g., 2.5)
+  commissionRate: number;
+  specialty: 'Luxury' | 'Residential' | 'Commercial' | 'Plots' | 'Foreclosure' | 'Industrial';
+  source: string; // Originating platform (e.g., Zillow, MagicBricks, Realty)
 }
 
 export interface Client {
-  id: number;
-  name: string;
+  id: number; // ClientID
+  name: string; // ClientName
   email: string;
+  preferredCity: string;
   budget: number;
   status: 'Active' | 'Cold' | 'Closed';
   interestedIn: string[];
+}
+
+export interface Transaction {
+  id: number; // TransactionID
+  agentId: number;
+  clientId: number;
+  propertyId: number;
+  salePrice: number;
+  commission: number;
+  feedbackRating: number;
+  date: string;
 }
 
 export interface SQLMessage {
@@ -48,10 +64,11 @@ export enum ViewState {
   PROPERTIES = 'properties',
   AGENTS = 'agents',
   CLIENTS = 'clients',
-  SQL_ANALYST = 'sql_analyst'
+  SQL_ANALYST = 'sql_analyst',
+  BOOKING = 'booking'
 }
 
-export type UserRole = 'admin' | 'agent';
+export type UserRole = 'admin' | 'agent' | 'guest';
 
 export interface User {
   name: string;

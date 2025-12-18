@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
-import { Mail, Phone, Star, TrendingUp, Plus, X, User as UserIcon, DollarSign, Award, Image as ImageIcon, Percent, Banknote } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Mail, Phone, Star, TrendingUp, Plus, X, Award, Radar, Loader2, MapPin, LandPlot, Home, Globe, Search, Gem, Landmark, ShieldCheck, CheckCircle, Users } from 'lucide-react';
 import { MOCK_AGENTS } from '../constants';
 import { Agent, User } from '../types';
+import { findNearbySellers } from '../services/geminiService';
 
 interface AgentListProps {
   user: User;
@@ -10,296 +11,178 @@ interface AgentListProps {
 
 const AgentList: React.FC<AgentListProps> = ({ user }) => {
   const [agents, setAgents] = useState<Agent[]>(MOCK_AGENTS);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newAgent, setNewAgent] = useState<Partial<Agent>>({
-    name: '',
-    email: '',
-    phone: '',
-    sales: 0,
-    rating: 5.0,
-    imageUrl: '',
-    commissionRate: 2.0
-  });
+  const [isScoutModalOpen, setIsScoutModalOpen] = useState(false);
+  const [scoutType, setScoutType] = useState<'Plot' | 'Villa'>('Plot');
+  const [isScouting, setIsScouting] = useState(false);
+  const [scoutResults, setScoutResults] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [specialtyFilter, setSpecialtyFilter] = useState('All');
 
   const isAdmin = user.role === 'admin';
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewAgent(prev => ({
-      ...prev,
-      [name]: (name === 'sales' || name === 'rating' || name === 'commissionRate') ? parseFloat(value) || 0 : value
-    }));
-  };
+  const filteredAgents = useMemo(() => {
+    return agents.filter(agent => {
+      const matchesSearch = agent.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSpecialty = specialtyFilter === 'All' || agent.specialty === specialtyFilter;
+      return matchesSearch && matchesSpecialty;
+    });
+  }, [agents, searchQuery, specialtyFilter]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newAgent.name || !newAgent.email) return;
-
-    const agent: Agent = {
-      id: Math.max(...agents.map(a => a.id)) + 1,
-      name: newAgent.name,
-      email: newAgent.email,
-      phone: newAgent.phone || '555-0000',
-      sales: newAgent.sales || 0,
-      rating: newAgent.rating || 0,
-      imageUrl: newAgent.imageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(newAgent.name)}&background=random`,
-      commissionRate: newAgent.commissionRate || 2.0
-    };
-
-    setAgents([...agents, agent]);
-    setIsModalOpen(false);
-    setNewAgent({ name: '', email: '', phone: '', sales: 0, rating: 5.0, imageUrl: '', commissionRate: 2.0 });
+  const handleScoutSellers = () => {
+    if (!navigator.geolocation) return;
+    setIsScouting(true);
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      try {
+        const results = await findNearbySellers(pos.coords.latitude, pos.coords.longitude, scoutType);
+        setScoutResults(results);
+      } finally {
+        setIsScouting(false);
+      }
+    });
   };
 
   return (
-    <div className="space-y-6 relative">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex justify-between items-center gap-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Our Agents</h2>
-          <div className="text-sm text-slate-500">
-            {isAdmin ? 'Top performers this month' : 'Contact Directory'}
-          </div>
+          <h2 className="glass-header-3d text-2xl font-bold">Global Talent Registry</h2>
+          <p className="text-xs text-slate-500 font-black uppercase tracking-[0.2em] mt-3 px-4 py-1.5 bg-white/40 border border-white/40 rounded-full inline-flex items-center gap-2">
+            <Globe size={14} className="text-blue-500" /> 100+ Aggregated Sources
+          </p>
         </div>
-        {isAdmin && (
-          <button 
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
-          >
-            <Plus size={18} />
-            Register New Agent
+        <div className="flex gap-3">
+          <button onClick={() => setIsScoutModalOpen(true)} className="px-6 py-3 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl">
+            <Radar size={18} className="inline mr-2" /> Deep Scout
           </button>
-        )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {agents.map((agent) => {
-          const totalCommission = agent.sales * (agent.commissionRate / 100);
-          
-          return (
-            <div key={agent.id} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-6 items-start hover:shadow-md transition-shadow group">
-              <div className="relative">
-                <img 
-                  src={agent.imageUrl} 
-                  alt={agent.name} 
-                  className="w-24 h-24 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center text-yellow-400">
-                  <Star fill="currentColor" size={14} />
-                </div>
-              </div>
-
-              <div className="flex-1 space-y-3 w-full">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-800">{agent.name}</h3>
-                    <div className="flex items-center gap-1 text-yellow-500 text-sm font-medium">
-                      {agent.rating} <span className="text-slate-400 font-normal">/ 5.0 Rating</span>
-                    </div>
-                  </div>
-                  {isAdmin && (
-                    <div className="text-right">
-                      <p className="text-xs text-slate-400 uppercase tracking-wider">Total Sales</p>
-                      <p className="text-lg font-bold text-blue-600">${(agent.sales / 1000000).toFixed(2)}M</p>
-                    </div>
-                  )}
-                </div>
-
-                {isAdmin ? (
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    <div className="bg-emerald-50 p-2 rounded-lg border border-emerald-100">
-                       <div className="flex items-center gap-1.5 text-emerald-600 text-xs font-semibold uppercase">
-                          <Percent size={12} />
-                          Commission
-                       </div>
-                       <div className="text-emerald-800 font-bold text-sm mt-0.5">{agent.commissionRate}%</div>
-                    </div>
-                    <div className="bg-blue-50 p-2 rounded-lg border border-blue-100">
-                       <div className="flex items-center gap-1.5 text-blue-600 text-xs font-semibold uppercase">
-                          <Banknote size={12} />
-                          Earned
-                       </div>
-                       <div className="text-blue-800 font-bold text-sm mt-0.5">${(totalCommission / 1000).toFixed(1)}k</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="h-10"></div> /* Spacer to keep card height consistent or remove if variable height is preferred */
-                )}
-
-                <div className="grid grid-cols-1 gap-2 pt-2 border-t border-slate-100">
-                  <a href={`mailto:${agent.email}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors text-sm text-slate-600">
-                    <Mail size={16} className="text-slate-400" />
-                    {agent.email}
-                  </a>
-                  <a href={`tel:${agent.phone}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors text-sm text-slate-600">
-                    <Phone size={16} className="text-slate-400" />
-                    {agent.phone}
-                  </a>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Add Agent Modal - Only for Admins */}
-      {isModalOpen && isAdmin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div 
-            className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm transition-opacity duration-300"
-            onClick={() => setIsModalOpen(false)}
+      <div className="glass-panel p-6 rounded-[32px] flex flex-col xl:flex-row gap-6 shadow-xl border-white/40">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-3.5 text-slate-400" size={20} />
+          <input 
+            type="text" 
+            placeholder="Search by name or email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-6 py-3.5 bg-white/50 border border-slate-200/60 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-blue-100 outline-none transition-all"
           />
-          
-          <div className="relative w-full max-w-lg bg-white/80 backdrop-blur-xl border border-white/50 rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
-            <div className="flex justify-between items-center p-6 border-b border-slate-200/50 bg-white/30">
-              <h3 className="text-xl font-bold text-slate-900">Register New Agent</h3>
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 hover:bg-black/5 rounded-full transition-colors text-slate-500 hover:text-slate-800"
-              >
-                <X size={20} />
-              </button>
+        </div>
+        <select 
+          value={specialtyFilter}
+          onChange={(e) => setSpecialtyFilter(e.target.value)}
+          className="px-4 py-3 bg-white/50 border border-slate-200/60 rounded-2xl text-xs font-black text-slate-700 outline-none min-w-[160px]"
+        >
+          <option value="All">All Disciplines</option>
+          <option value="Luxury">Luxury Estates</option>
+          <option value="Plots">Land & Plots</option>
+          <option value="Residential">Residential</option>
+        </select>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        {filteredAgents.map((agent) => (
+          <div key={agent.id} className="glass-panel p-8 rounded-[40px] flex flex-col hover:bg-white/80 transition-all duration-500 group shadow-lg border-white/50 relative overflow-hidden">
+            {agent.specialty === 'Luxury' && <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full -mr-16 -mt-16" />}
+            {agent.specialty === 'Plots' && <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -mr-16 -mt-16" />}
+
+            <div className="flex gap-6 items-start mb-8">
+              <div className="relative shrink-0">
+                <img src={agent.imageUrl} alt={agent.name} className="w-20 h-20 rounded-3xl object-cover shadow-2xl ring-4 ring-white/80" />
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-slate-900 text-white rounded-2xl flex items-center justify-center border-4 border-white">
+                  <ShieldCheck size={14} className="text-blue-400" />
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-xl font-black text-slate-800 truncate">{agent.name}</h3>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">• {agent.experienceYears}Y Exp • {agent.rating}★</p>
+                <span className="px-3 py-1 bg-slate-50 text-[9px] font-black text-slate-400 uppercase tracking-widest rounded-lg border border-slate-100 mt-2 inline-block">
+                  VIA {agent.source}
+                </span>
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Full Name</label>
-                  <div className="relative">
-                    <UserIcon className="absolute left-3 top-2.5 text-slate-400" size={18} />
-                    <input
-                      type="text"
-                      name="name"
-                      required
-                      value={newAgent.name}
-                      onChange={handleInputChange}
-                      placeholder="e.g. Jane Doe"
-                      className="w-full pl-10 pr-4 py-2 bg-white/50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
-                    />
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className={`p-4 rounded-3xl border ${agent.specialty === 'Luxury' ? 'bg-amber-50 border-amber-100' : 'bg-blue-50 border-blue-100'}`}>
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Specialty</p>
+                <p className="text-xs font-black flex items-center gap-2">
+                   {agent.specialty === 'Luxury' ? <Gem size={14} className="text-amber-600" /> : <Landmark size={14} className="text-blue-600" />} 
+                   {agent.specialty}
+                </p>
+              </div>
+              <div className="bg-slate-900 p-4 rounded-3xl border border-slate-800 text-right">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Performance</p>
+                <p className="text-sm font-black text-white">PRO</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 mb-8">
+               <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                  <Mail size={16} className="text-slate-400" />
+                  <span className="text-xs font-bold text-slate-600 truncate">{agent.email}</span>
+               </div>
+               <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                  <Phone size={16} className="text-slate-400" />
+                  <span className="text-xs font-bold text-slate-600">{agent.phone}</span>
+               </div>
+            </div>
+            <button className="w-full py-4 bg-white border-2 border-slate-100 text-slate-900 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-slate-900 hover:text-white transition-all">
+               View Full Dossier
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {isScoutModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-xl" onClick={() => setIsScoutModalOpen(false)} />
+          <div className="relative w-full max-w-2xl glass-panel bg-white/95 rounded-[40px] shadow-2xl overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
+             <div className="p-10 border-b border-slate-100 flex justify-between items-center">
+                <div className="flex items-center gap-4">
+                  <Radar size={32} className="text-slate-900 animate-pulse" />
+                  <div>
+                    <h3 className="text-2xl font-black text-slate-900">Intelligence Scout</h3>
+                    <p className="text-xs text-slate-500 font-black tracking-widest">Maps-Grounded Lead Gen</p>
                   </div>
                 </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Email Address</label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-2.5 text-slate-400" size={18} />
-                      <input
-                        type="email"
-                        name="email"
-                        required
-                        value={newAgent.email}
-                        onChange={handleInputChange}
-                        placeholder="jane@estatemind.com"
-                        className="w-full pl-10 pr-4 py-2 bg-white/50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Phone Number</label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-2.5 text-slate-400" size={18} />
-                      <input
-                        type="tel"
-                        name="phone"
-                        required
-                        value={newAgent.phone}
-                        onChange={handleInputChange}
-                        placeholder="555-0123"
-                        className="w-full pl-10 pr-4 py-2 bg-white/50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Total Sales Volume ($)</label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-2.5 text-slate-400" size={18} />
-                      <input
-                        type="number"
-                        name="sales"
-                        min="0"
-                        step="1000"
-                        value={newAgent.sales}
-                        onChange={handleInputChange}
-                        placeholder="0.00"
-                        className="w-full pl-10 pr-4 py-2 bg-white/50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Commission Rate (%)</label>
-                    <div className="relative">
-                      <Percent className="absolute left-3 top-2.5 text-slate-400" size={18} />
-                      <input
-                        type="number"
-                        name="commissionRate"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        value={newAgent.commissionRate}
-                        onChange={handleInputChange}
-                        placeholder="2.5"
-                        className="w-full pl-10 pr-4 py-2 bg-white/50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                 <div className="grid grid-cols-1 gap-4">
-                    <div>
-                        <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Rating (0-5)</label>
-                        <div className="relative">
-                        <Award className="absolute left-3 top-2.5 text-slate-400" size={18} />
-                        <input
-                            type="number"
-                            name="rating"
-                            min="0"
-                            max="5"
-                            step="0.1"
-                            value={newAgent.rating}
-                            onChange={handleInputChange}
-                            placeholder="5.0"
-                            className="w-full pl-10 pr-4 py-2 bg-white/50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
-                        />
-                        </div>
-                    </div>
+                <button onClick={() => setIsScoutModalOpen(false)} className="p-3 hover:rotate-90 transition-transform"><X size={28}/></button>
+             </div>
+             <div className="p-10 flex-1 overflow-y-auto">
+               <div className="grid grid-cols-2 gap-4 mb-10 p-2 bg-slate-100 rounded-[32px]">
+                 {['Plot', 'Villa'].map((type) => (
+                   <button 
+                     key={type}
+                     onClick={() => setScoutType(type as any)}
+                     className={`flex items-center justify-center gap-3 py-4 rounded-[24px] text-xs font-black uppercase tracking-widest transition-all ${
+                       scoutType === type ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400'
+                     }`}
+                   >
+                     {type === 'Plot' ? <Landmark size={20} /> : <Gem size={20} />} {type}s
+                   </button>
+                 ))}
+               </div>
+               <button onClick={handleScoutSellers} disabled={isScouting} className="w-full py-6 bg-slate-900 text-white font-black uppercase tracking-widest rounded-[32px] flex items-center justify-center gap-4">
+                 {isScouting ? <Loader2 className="animate-spin" size={24} /> : <Radar size={24} />}
+                 {isScouting ? 'SCANNING...' : `START ${scoutType.toUpperCase()} SCOUT`}
+               </button>
+               {scoutResults.length > 0 && (
+                 <div className="mt-12 space-y-6">
+                   {scoutResults.map((lead, idx) => (
+                     <div key={idx} className="p-6 bg-white border-2 border-slate-50 rounded-[32px] hover:border-blue-100 transition-all">
+                       <h5 className="text-xl font-black text-slate-900">{lead.name}</h5>
+                       <p className="text-xs text-slate-500 font-bold flex items-center gap-2 mt-1">
+                         <MapPin size={14} className="text-blue-400" /> {lead.location}
+                       </p>
+                       <div className="mt-4 flex gap-3">
+                          <a href={`tel:${lead.contact}`} className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 text-slate-900 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-900 hover:text-white transition-all">
+                            <Phone size={14} /> Connect
+                          </a>
+                       </div>
+                     </div>
+                   ))}
                  </div>
-
-                 <div>
-                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Profile Photo URL (Optional)</label>
-                  <div className="relative">
-                    <ImageIcon className="absolute left-3 top-2.5 text-slate-400" size={18} />
-                    <input
-                      type="text"
-                      name="imageUrl"
-                      value={newAgent.imageUrl}
-                      onChange={handleInputChange}
-                      placeholder="https://..."
-                      className="w-full pl-10 pr-4 py-2 bg-white/50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-slate-200/50">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 text-sm font-medium bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg hover:shadow-blue-500/30 transition-all flex items-center gap-2"
-                >
-                  <Plus size={16} />
-                  Register Agent
-                </button>
-              </div>
-            </form>
+               )}
+             </div>
           </div>
         </div>
       )}
