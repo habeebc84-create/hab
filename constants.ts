@@ -24,6 +24,16 @@ const SOURCES = [
   "RE/MAX", "Century 21", "Direct"
 ];
 
+const EXTENDED_50_SOURCES = [
+  "MagicBricks", "99Acres", "Housing.com", "Zillow", "Redfin", "Trulia", "Realtor.com", "Sotheby's", 
+  "Christie's", "Knight Frank", "Coldwell Banker", "RE/MAX", "Century 21", "Direct", "PropertyFinder", 
+  "Bayut", "Rightmove", "Zoopla", "OnTheMarket", "Domain.com.au", "Realestate.com.au", "Immobiliare.it", 
+  "Idealista", "SeLoger", "Anjuke", "Lianjia", "CommonFloor", "NoBroker", "SquareYards", "PropTiger", 
+  "QuikrHomes", "Makaan", "Sulekha Properties", "Click.in", "IndiaProperty", "Trovit", "Mitula", "Nestoria", 
+  "Compass", "eXp Realty", "Douglas Elliman", "Berkshire Hathaway", "Corcoran", "Keller Williams", 
+  "ERA Real Estate", "Better Homes and Gardens", "Engel & Völkers", "Savills", "Cushman & Wakefield", "JLL"
+];
+
 const SPECIALTIES = ['Luxury', 'Residential', 'Commercial', 'Plots', 'Foreclosure', 'Industrial'] as const;
 
 const generateAgents = (): Agent[] => {
@@ -89,11 +99,77 @@ const generateProperties = (): Property[] => {
 };
 
 export const MOCK_PROPERTIES = generateProperties();
-export const MOCK_CLIENTS = []; // Empty for brevity in generation, assume initialized elsewhere
-export const MOCK_TRANSACTIONS = [];
+
+const generateClients = (): Client[] => {
+  const clients: Client[] = [];
+  const youngFirstNames = ["Aiden", "Chloe", "Ethan", "Maya", "Leo", "Zoe", "Noah", "Luna", "Liam", "Ava", "Lucas", "Isla", "Mason", "Sophie", "Elias", "Mia", "Oliver", "Harper", "Caleb", "Aria", "Sebastian", "Emma", "Jack", "Mila", "Owen", "Ella", "Wyatt", "Scarlett", "Henry", "Grace", "Julian", "Lily", "Levi", "Nora", "Ezra", "Hazel", "Alexander", "Aurora", "Isaac", "Penelope", "Gabriel", "Elena", "Daniel", "Victoria", "Samuel", "Stella", "Anthony", "Ivy", "Dylan", "Willow"];
+  const surnames = ["Chen", "Sharma", "Rodriguez", "Smith", "Kim", "Patel", "Gomez", "Muller", "O'Connor", "Ivanov", "Singh", "Lopez", "Wang", "Brown", "Ali", "Garcia", "Tanaka", "Yamamoto", "Wong", "Dubois", "Conti", "Silva", "Santos", "Costa", "Pereira", "Ferreira", "Oliveira", "Martins", "Almeida", "Rodrigues", "Sousa", "Fernandes", "Moreira", "Gomes", "Marques", "Ribeiro", "Carvalho", "Teixeira", "Mendes", "Soares", "Vieira", "Nunes", "Machado", "Rocha", "Cardoso", "Correia", "Dias", "Brito", "Figueiredo", "Fonseca"];
+  const jobs = ["Software Engineer", "Marketing Lead", "UX Designer", "Startup Founder", "Data Scientist", "Content Creator", "Project Manager", "Architect", "Doctor", "Financial Analyst", "Cybersecurity Expert", "E-commerce Specialist", "Creative Director", "Legal Consultant", "Sustainable Energy Consultant"];
+  const cities = ["Mumbai", "Bangalore", "Chennai", "Hyderabad", "Pune", "Goa", "Delhi"];
+  const youngImages = [
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1488161628813-244a20a14294?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1529139513055-1197978a62e7?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop"
+  ];
+
+  for (let i = 0; i < 50; i++) {
+    const firstName = youngFirstNames[i];
+    const lastName = surnames[i];
+    const name = `${firstName} ${lastName}`;
+    
+    clients.push({
+      id: 5000 + i,
+      name,
+      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
+      phone: `+91 ${Math.floor(Math.random() * 90000 + 10000)} ${Math.floor(Math.random() * 90000 + 10000)}`,
+      jobTitle: jobs[i % jobs.length],
+      preferredCity: cities[i % cities.length],
+      budget: Math.floor(Math.random() * (150000000 - 5000000) + 5000000),
+      status: i % 10 === 0 ? 'Closed' : i % 5 === 0 ? 'Cold' : 'Active',
+      interestedIn: ['Villa', 'Plot', 'Condo'].sort(() => 0.5 - Math.random()).slice(0, 2),
+      imageUrl: youngImages[i % youngImages.length],
+      source: EXTENDED_50_SOURCES[i % EXTENDED_50_SOURCES.length],
+      lastActive: new Date(Date.now() - Math.random() * 10 * 86400000).toISOString().split('T')[0]
+    });
+  }
+  return clients;
+};
+
+export const MOCK_CLIENTS = generateClients();
+
+const generateTransactions = (): Transaction[] => {
+  const transactions: Transaction[] = [];
+  for (let i = 0; i < 20; i++) {
+    const property = MOCK_PROPERTIES[i % MOCK_PROPERTIES.length];
+    const agent = MOCK_AGENTS[i % MOCK_AGENTS.length];
+    const client = MOCK_CLIENTS[i % MOCK_CLIENTS.length];
+    
+    transactions.push({
+      id: 9000 + i,
+      agentId: agent.id,
+      clientId: client.id,
+      propertyId: property.id,
+      salePrice: property.price,
+      commission: property.price * (agent.commissionRate / 100),
+      feedbackRating: Math.floor(Math.random() * 2) + 4,
+      date: new Date(Date.now() - Math.random() * 60 * 86400000).toISOString().split('T')[0]
+    });
+  }
+  return transactions;
+};
+
+export const MOCK_TRANSACTIONS = generateTransactions();
 
 export const DB_SCHEMA = `
   TABLE AGENTS (AgentID INT PRIMARY KEY, AgentName VARCHAR(100), ExperienceYears INT, Specialty VARCHAR(50), Source VARCHAR(50), Rating DECIMAL(2,1));
   TABLE PROPERTIES (PropertyID INT PRIMARY KEY, Address VARCHAR(255), City VARCHAR(100), ListedPrice DECIMAL(15,2), Type VARCHAR(50), SQFT INT, Source VARCHAR(50));
+  TABLE CLIENTS (ClientID INT PRIMARY KEY, ClientName VARCHAR(100), Email VARCHAR(100), JobTitle VARCHAR(100), Budget DECIMAL(15,2), PreferredCity VARCHAR(50), Source VARCHAR(50), Status VARCHAR(20));
   TABLE TRANSACTIONS (TransactionID INT PRIMARY KEY, AgentID INT, ClientID INT, PropertyID INT, SalePrice DECIMAL(15,2), Commission DECIMAL(15,2), FeedbackRating INT, TransactionDate DATE);
 `;

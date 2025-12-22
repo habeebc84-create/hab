@@ -14,7 +14,7 @@ const AgentList: React.FC<AgentListProps> = ({ user }) => {
   const [isScoutModalOpen, setIsScoutModalOpen] = useState(false);
   const [scoutType, setScoutType] = useState<'Plot' | 'Villa'>('Plot');
   const [isScouting, setIsScouting] = useState(false);
-  const [scoutResults, setScoutResults] = useState<any[]>([]);
+  const [scoutResults, setScoutResults] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
 
@@ -31,10 +31,11 @@ const AgentList: React.FC<AgentListProps> = ({ user }) => {
   const handleScoutSellers = () => {
     if (!navigator.geolocation) return;
     setIsScouting(true);
+    setScoutResults(null);
     navigator.geolocation.getCurrentPosition(async (pos) => {
       try {
-        const results = await findNearbySellers(pos.coords.latitude, pos.coords.longitude, scoutType);
-        setScoutResults(results);
+        const textResult = await findNearbySellers(pos.coords.latitude, pos.coords.longitude, scoutType);
+        setScoutResults(textResult);
       } finally {
         setIsScouting(false);
       }
@@ -141,8 +142,8 @@ const AgentList: React.FC<AgentListProps> = ({ user }) => {
                 <div className="flex items-center gap-4">
                   <Radar size={32} className="text-slate-900 animate-pulse" />
                   <div>
-                    <h3 className="text-2xl font-black text-slate-900">Intelligence Scout</h3>
-                    <p className="text-xs text-slate-500 font-black tracking-widest">Maps-Grounded Lead Gen</p>
+                    <h3 className="glass-header-3d text-2xl font-black text-slate-900 bg-white/60">Intelligence Scout</h3>
+                    <p className="text-xs text-slate-500 font-black tracking-widest mt-3 ml-2">Maps-Grounded Lead Gen</p>
                   </div>
                 </div>
                 <button onClick={() => setIsScoutModalOpen(false)} className="p-3 hover:rotate-90 transition-transform"><X size={28}/></button>
@@ -165,23 +166,16 @@ const AgentList: React.FC<AgentListProps> = ({ user }) => {
                  {isScouting ? <Loader2 className="animate-spin" size={24} /> : <Radar size={24} />}
                  {isScouting ? 'SCANNING...' : `START ${scoutType.toUpperCase()} SCOUT`}
                </button>
-               {scoutResults.length > 0 && (
-                 <div className="mt-12 space-y-6">
-                   {scoutResults.map((lead, idx) => (
-                     <div key={idx} className="p-6 bg-white border-2 border-slate-50 rounded-[32px] hover:border-blue-100 transition-all">
-                       <h5 className="text-xl font-black text-slate-900">{lead.name}</h5>
-                       <p className="text-xs text-slate-500 font-bold flex items-center gap-2 mt-1">
-                         <MapPin size={14} className="text-blue-400" /> {lead.location}
-                       </p>
-                       <div className="mt-4 flex gap-3">
-                          <a href={`tel:${lead.contact}`} className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 text-slate-900 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-900 hover:text-white transition-all">
-                            <Phone size={14} /> Connect
-                          </a>
-                       </div>
-                     </div>
-                   ))}
+               {scoutResults && (
+                 <div className="mt-12 p-8 bg-white border-2 border-slate-50 rounded-[40px] shadow-inner text-slate-700 leading-relaxed font-medium whitespace-pre-wrap">
+                    {scoutResults}
                  </div>
                )}
+             </div>
+             <div className="p-8 border-t border-slate-100 flex justify-center">
+               <button onClick={() => setIsScoutModalOpen(false)} className="px-10 py-3 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest">
+                  Close Intelligence Feed
+               </button>
              </div>
           </div>
         </div>

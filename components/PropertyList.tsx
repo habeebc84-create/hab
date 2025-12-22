@@ -19,6 +19,7 @@ const PropertyList: React.FC<PropertyListProps> = ({ onBookProperty }) => {
   
   // Details Modal State
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [nearbyResults, setNearbyResults] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -81,19 +82,6 @@ const PropertyList: React.FC<PropertyListProps> = ({ onBookProperty }) => {
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setPreviewImage(result);
-        setFormData(prev => ({ ...prev, imageUrl: result }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleFindNearby = () => {
     if (!navigator.geolocation) {
       alert("Geolocation is not supported by your browser");
@@ -101,34 +89,15 @@ const PropertyList: React.FC<PropertyListProps> = ({ onBookProperty }) => {
     }
 
     setLoadingLocation(true);
+    setNearbyResults(null);
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-          const realProperties = await findNearbyProperties(latitude, longitude);
-          
-          const newProperties: Property[] = realProperties.map((p: any, index: number) => ({
-            id: Date.now() + index,
-            address: p.address,
-            city: "Found Nearby", 
-            price: p.price * 80, 
-            bedrooms: p.bedrooms,
-            bathrooms: p.bathrooms,
-            sqft: p.sqft,
-            type: p.type || "Single Family",
-            status: "For Sale",
-            agentId: Math.floor(Math.random() * 50) + 1,
-            imageUrl: REAL_ESTATE_IMAGES[index % REAL_ESTATE_IMAGES.length],
-            listedDate: new Date().toISOString().split('T')[0],
-            ownerName: "Verified Owner",
-            ownerContact: "+91 99887 76655",
-            source: "Google Intelligence"
-          }));
-
-          setProperties(prev => [...newProperties, ...prev]);
+          const resultText = await findNearbyProperties(latitude, longitude);
+          setNearbyResults(resultText);
         } catch (error) {
           console.error("Failed to fetch nearby properties", error);
-          alert("Could not fetch nearby properties. Please check your API key.");
         } finally {
           setLoadingLocation(false);
         }
@@ -351,7 +320,36 @@ const PropertyList: React.FC<PropertyListProps> = ({ onBookProperty }) => {
         )}
       </div>
 
-       {/* Property Details Modal - Redesigned for High Impact */}
+       {/* Nearby Properties Modal (Maps Grounding Result) */}
+       {nearbyResults && (
+         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-xl" onClick={() => setNearbyResults(null)} />
+            <div className="relative w-full max-w-2xl glass-panel bg-white/95 rounded-[40px] shadow-2xl overflow-hidden animate-fade-in flex flex-col max-h-[85vh]">
+                <div className="p-8 border-b border-slate-100 flex justify-between items-center">
+                   <div className="flex items-center gap-4">
+                      <div className="p-3 bg-emerald-600 text-white rounded-2xl shadow-lg">
+                         <Navigation size={24} className="animate-pulse" />
+                      </div>
+                      <div>
+                         <h3 className="glass-header-3d text-xl font-black text-slate-900">Nearby Market Report</h3>
+                         <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1 ml-1">Grounded by Google Maps AI</p>
+                      </div>
+                   </div>
+                   <button onClick={() => setNearbyResults(null)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400"><X size={24}/></button>
+                </div>
+                <div className="p-8 overflow-y-auto whitespace-pre-wrap text-slate-700 leading-relaxed font-medium">
+                   {nearbyResults}
+                </div>
+                <div className="p-8 border-t border-slate-100 flex justify-center">
+                   <button onClick={() => setNearbyResults(null)} className="px-8 py-3 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest">
+                      Acknowledge Report
+                   </button>
+                </div>
+            </div>
+         </div>
+       )}
+
+       {/* Property Details Modal */}
        {selectedProperty && (
          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div 
@@ -390,8 +388,8 @@ const PropertyList: React.FC<PropertyListProps> = ({ onBookProperty }) => {
                     </button>
 
                     <div className="mb-12">
-                        <h3 className="text-3xl font-black text-slate-900 mb-2">Technical Specifications</h3>
-                        <p className="text-slate-400 font-black text-xs uppercase tracking-widest">Reference ID: EM-PR-{selectedProperty.id}</p>
+                        <h3 className="glass-header-3d text-3xl font-black text-slate-900 mb-2 bg-white/60">Technical Specifications</h3>
+                        <p className="text-slate-400 font-black text-xs uppercase tracking-widest mt-4 ml-2">Reference ID: EM-PR-{selectedProperty.id}</p>
                     </div>
                     
                     <div className="space-y-12 flex-1">
@@ -410,10 +408,10 @@ const PropertyList: React.FC<PropertyListProps> = ({ onBookProperty }) => {
                         </div>
                         
                         <div className="space-y-6">
-                            <h4 className="font-black text-slate-900 text-xs uppercase tracking-[0.3em] flex items-center gap-3">
+                            <h4 className="glass-header-3d font-black text-slate-900 text-xs uppercase tracking-[0.3em] flex items-center gap-3 bg-white/60">
                                 <PenTool size={18} className="text-blue-500" /> Executive Summary
                             </h4>
-                            <p className="text-slate-600 text-lg leading-relaxed font-medium italic">
+                            <p className="text-slate-600 text-lg leading-relaxed font-medium italic mt-6">
                                 "A rare opportunity to acquire a prime {selectedProperty.type} in {selectedProperty.city}. 
                                 This asset has been rigorously audited for value optimization and legal clearance."
                             </p>
@@ -447,7 +445,7 @@ const PropertyList: React.FC<PropertyListProps> = ({ onBookProperty }) => {
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setIsModalOpen(false)} />
           <div className="relative w-full max-w-3xl glass-panel bg-white rounded-[40px] shadow-2xl overflow-hidden animate-fade-in">
              <div className="p-10 border-b border-slate-100 flex justify-between items-center">
-                <h3 className="text-2xl font-black text-slate-900">List New Market Asset</h3>
+                <h3 className="glass-header-3d text-2xl font-black text-slate-900 bg-white/60">List New Market Asset</h3>
                 <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400"><X size={24}/></button>
              </div>
              <form onSubmit={handleSubmit} className="p-10 max-h-[70vh] overflow-y-auto">

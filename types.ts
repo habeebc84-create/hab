@@ -34,10 +34,15 @@ export interface Client {
   id: number; // ClientID
   name: string; // ClientName
   email: string;
+  phone: string;
+  jobTitle: string;
   preferredCity: string;
   budget: number;
   status: 'Active' | 'Cold' | 'Closed';
   interestedIn: string[];
+  imageUrl: string;
+  source: string;
+  lastActive: string;
 }
 
 export interface Transaction {
