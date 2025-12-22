@@ -2,36 +2,57 @@
 import { Property, Agent, Client, Transaction } from './types';
 
 export const REAL_ESTATE_IMAGES = [
-  "https://images.unsplash.com/photo-1600596542815-2495db98dada?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80", // Field/Plot
-  "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80", // Mountain View Plot
-  "https://images.unsplash.com/photo-1613545325278-f24b0cae1224?auto=format&fit=crop&w=800&q=80", // Modern Villa
-  "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=800&q=80"  // Luxury Pool Villa
+  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80", // Modern House
+  "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80", // Luxury Villa
+  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80", // Pool Villa
+  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80", // Modern Architecture
+  "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80", // Interior Luxury
+  "https://images.unsplash.com/photo-1600596542815-2495db98dada?auto=format&fit=crop&w=1200&q=80", // Mansion
+  "https://images.unsplash.com/photo-1580587767526-d3c5168dd2b8?auto=format&fit=crop&w=1200&q=80", // Suburban Home
+  "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=1200&q=80", // Estate
+  "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80", // Modern White House
+  "https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?auto=format&fit=crop&w=1200&q=80", // Glass House
+  "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80", // Field/Plot
+  "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80", // Mountain Plot
+  "https://images.unsplash.com/photo-1613545325278-f24b0cae1224?auto=format&fit=crop&w=1200&q=80", // Minimalist Villa
+  "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=1200&q=80"  // Tropical Villa
 ];
 
-const SOURCES = [
-  "MagicBricks", "99Acres", "Housing.com", "Zillow", "Redfin", "Trulia", 
-  "Realtor.com", "Sotheby's", "Christie's", "Knight Frank", "Coldwell Banker",
-  "RE/MAX", "Century 21", "Direct"
-];
+// Comprehensive Categorized Market Portals
+export const MARKET_PORTALS = {
+  Residential: [
+    "Zillow", "Realtor.com", "Redfin", "Trulia", "Homes.com", "Apartments.com", "Rightmove", "Zoopla", 
+    "Realestate.com.au", "Domain.com.au", "Juwai", "Idealista", "MagicBricks", "99acres", "Housing.com", 
+    "NoBroker", "Point2Homes", "Estately", "Movoto", "RealtyTrac"
+  ],
+  Commercial: [
+    "LoopNet", "CoStar", "CREXi", "CommercialExchange", "Brevitas", "Ten-X", "CityFeet", "Showcase", 
+    "OfficeSpace", "QuantumListing", "RealNex", "Catylist", "Rented.com", "BiggerPockets", "Reonomy"
+  ],
+  Luxury: [
+    "Sotheby's", "Christie's", "Mansion Global", "LuxuryEstate", "JamesEdition", "DuPont Registry", 
+    "Robb Report", "Unique Homes", "Luxury Presence", "LuxuryRealEstate.com"
+  ],
+  Distressed: [
+    "FSBO.com", "ForSaleByOwner", "Fizber", "Auction.com", "Hubzu", "Xome", "Foreclosure.com"
+  ],
+  Management: [
+    "AppFolio", "Buildium", "Yardi Breeze", "TenantCloud", "Avail", "Rentometer"
+  ],
+  News: [
+    "Inman", "The Real Deal", "RealtyTimes", "HousingWire", "RISMedia"
+  ],
+  Niche: [
+    "WalkScore", "GreatSchools", "Niche", "LandWatch", "TinyHouseListings"
+  ]
+};
 
-const EXTENDED_50_SOURCES = [
-  "MagicBricks", "99Acres", "Housing.com", "Zillow", "Redfin", "Trulia", "Realtor.com", "Sotheby's", 
-  "Christie's", "Knight Frank", "Coldwell Banker", "RE/MAX", "Century 21", "Direct", "PropertyFinder", 
-  "Bayut", "Rightmove", "Zoopla", "OnTheMarket", "Domain.com.au", "Realestate.com.au", "Immobiliare.it", 
-  "Idealista", "SeLoger", "Anjuke", "Lianjia", "CommonFloor", "NoBroker", "SquareYards", "PropTiger", 
-  "QuikrHomes", "Makaan", "Sulekha Properties", "Click.in", "IndiaProperty", "Trovit", "Mitula", "Nestoria", 
-  "Compass", "eXp Realty", "Douglas Elliman", "Berkshire Hathaway", "Corcoran", "Keller Williams", 
-  "ERA Real Estate", "Better Homes and Gardens", "Engel & Völkers", "Savills", "Cushman & Wakefield", "JLL"
+// Flattened list for random source assignment
+export const GLOBAL_REAL_ESTATE_SOURCES = [
+  ...MARKET_PORTALS.Residential,
+  ...MARKET_PORTALS.Commercial,
+  ...MARKET_PORTALS.Luxury,
+  ...MARKET_PORTALS.Distressed
 ];
 
 const SPECIALTIES = ['Luxury', 'Residential', 'Commercial', 'Plots', 'Foreclosure', 'Industrial'] as const;
@@ -42,18 +63,26 @@ const generateAgents = (): Agent[] => {
   const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson", "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores", "Green", "Adams", "Nelson", "Baker", "Hall", "Rivera", "Campbell", "Mitchell", "Carter", "Roberts"];
 
   for (let i = 0; i < 50; i++) {
-    const name = `${firstNames[i]} ${lastNames[i]}`;
+    const firstName = firstNames[i];
+    const lastName = lastNames[i];
+    const primarySpecialty = SPECIALTIES[i % SPECIALTIES.length];
+    
+    const otherSpecialties = SPECIALTIES.filter(s => s !== primarySpecialty);
+    const selectedOthers = [...otherSpecialties].sort(() => 0.5 - Math.random()).slice(0, 2);
+    const topSpecialties = [primarySpecialty, ...selectedOthers];
+
     agents.push({
       id: i + 1,
-      name,
-      email: `${firstNames[i].toLowerCase()}.${lastNames[i].toLowerCase()}@estatemind.com`,
+      name: `${firstName} ${lastName}`,
+      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@estatemind.com`,
       phone: `+91 9${Math.floor(Math.random() * 90000 + 10000)} ${Math.floor(Math.random() * 90000 + 10000)}`,
       experienceYears: Math.floor(Math.random() * 25) + 1,
       rating: parseFloat((Math.random() * (5.0 - 3.8) + 3.8).toFixed(1)),
       imageUrl: `https://i.pravatar.cc/150?u=${i + 1000}`,
       commissionRate: parseFloat((Math.random() * (4.0 - 1.0) + 1.0).toFixed(1)),
-      specialty: SPECIALTIES[i % SPECIALTIES.length],
-      source: SOURCES[i % SOURCES.length]
+      specialty: primarySpecialty,
+      topSpecialties: topSpecialties,
+      source: GLOBAL_REAL_ESTATE_SOURCES[i % GLOBAL_REAL_ESTATE_SOURCES.length]
     });
   }
   return agents;
@@ -75,7 +104,7 @@ const generateProperties = (): Property[] => {
                 : Math.floor(Math.random() * (50000000 - 4500000) + 4500000);
 
     const city = i < 30 ? "Chennai" : ["Mumbai", "Bangalore", "Hyderabad", "Delhi", "Pune", "Goa"][i % 6];
-    const imageIndex = isPlot ? 10 + (i % 2) : isVilla ? 12 + (i % 2) : i % 10;
+    const imageIndex = isPlot ? 10 + (i % 2) : isVilla ? 1 + (i % 2) : i % 10;
 
     properties.push({
       id: 100 + i,
@@ -88,11 +117,11 @@ const generateProperties = (): Property[] => {
       type,
       status: statuses[i % 3],
       agentId: (i % MOCK_AGENTS.length) + 1,
-      imageUrl: REAL_ESTATE_IMAGES[imageIndex] || REAL_ESTATE_IMAGES[0],
+      imageUrl: REAL_ESTATE_IMAGES[imageIndex % REAL_ESTATE_IMAGES.length],
       listedDate: new Date().toISOString().split('T')[0],
       ownerName: `Premium Owner ${i+1}`,
       ownerContact: `+91 9${Math.floor(8000 + Math.random() * 1999)}${Math.floor(100000 + Math.random() * 900000)}`,
-      source: SOURCES[i % SOURCES.length]
+      source: GLOBAL_REAL_ESTATE_SOURCES[(i * 3) % GLOBAL_REAL_ESTATE_SOURCES.length]
     });
   }
   return properties;
@@ -135,7 +164,7 @@ const generateClients = (): Client[] => {
       status: i % 10 === 0 ? 'Closed' : i % 5 === 0 ? 'Cold' : 'Active',
       interestedIn: ['Villa', 'Plot', 'Condo'].sort(() => 0.5 - Math.random()).slice(0, 2),
       imageUrl: youngImages[i % youngImages.length],
-      source: EXTENDED_50_SOURCES[i % EXTENDED_50_SOURCES.length],
+      source: GLOBAL_REAL_ESTATE_SOURCES[(i * 2) % GLOBAL_REAL_ESTATE_SOURCES.length],
       lastActive: new Date(Date.now() - Math.random() * 10 * 86400000).toISOString().split('T')[0]
     });
   }

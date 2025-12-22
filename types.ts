@@ -27,6 +27,7 @@ export interface Agent {
   imageUrl: string;
   commissionRate: number;
   specialty: 'Luxury' | 'Residential' | 'Commercial' | 'Plots' | 'Foreclosure' | 'Industrial';
+  topSpecialties: string[]; // Top 3 expertise areas
   source: string; // Originating platform (e.g., Zillow, MagicBricks, Realty)
 }
 
